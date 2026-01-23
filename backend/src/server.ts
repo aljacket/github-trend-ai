@@ -8,7 +8,6 @@ dotenv.config({ path: '../.env' });
 
 // Check if OpenAI key is loaded
 const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
-console.log(`OpenAI API Key loaded: ${hasOpenAIKey ? 'Yes ✅' : 'No ❌'}`);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,8 +30,6 @@ app.post('/api/analyze', async (req, res) => {
       return res.status(400).json({ error: 'Invalid repository data' });
     }
 
-    console.log(`Analyzing repository: ${repo.full_name}`);
-
     const analysis = await analyzeRepository(repo);
 
     res.json(analysis);
@@ -53,8 +50,6 @@ app.post('/api/analyze-batch', async (req, res) => {
     if (!Array.isArray(repos) || repos.length === 0) {
       return res.status(400).json({ error: 'Invalid repositories array' });
     }
-
-    console.log(`Analyzing ${repos.length} repositories in batch`);
 
     const analyses = await Promise.all(
       repos.map(async (repo) => ({
@@ -81,8 +76,6 @@ app.post('/api/rank', async (req, res) => {
     if (!Array.isArray(repos) || repos.length === 0) {
       return res.status(400).json({ error: 'Invalid repositories array' });
     }
-
-    console.log(`Ranking ${repos.length} repositories with AI...`);
 
     const ranking = await rankRepositories(repos);
 

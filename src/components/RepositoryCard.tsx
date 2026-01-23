@@ -1,11 +1,10 @@
-import type { Repository } from '../services/github';
-import type { RepoAnalysis } from '../agents/repoAnalyzer';
+import type { Repository, RepoAnalysis, BadgeType } from '../types';
 
 interface RepositoryCardProps {
   repo: Repository;
   analysis?: RepoAnalysis;
   isAnalyzing?: boolean;
-  topBadge?: 'innovation' | 'production' | 'learning' | 'community' | 'research' | 'rising-star';
+  topBadge?: BadgeType;
   showStar?: boolean;
 }
 

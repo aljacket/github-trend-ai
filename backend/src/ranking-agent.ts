@@ -59,8 +59,6 @@ export async function rankRepositories(repos: RepoForRanking[]): Promise<Ranking
 
     const prompt = `Top 3 from:\n${repoList}`;
 
-    console.log(`🔍 Ranking ALL ${repos.length} repos...`);
-
     const result = await rankingAgent.generate(prompt);
 
     const text = result.text || '';

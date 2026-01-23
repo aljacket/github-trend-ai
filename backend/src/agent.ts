@@ -79,8 +79,7 @@ Provide a structured analysis as JSON.`;
 
     // Fallback if parsing fails
     return getFallbackAnalysis(repo);
-  } catch (error) {
-    console.error('Error analyzing repository:', error);
+  } catch {
     return getFallbackAnalysis(repo);
   }
 }

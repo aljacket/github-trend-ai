@@ -2,23 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { FilterBar } from './components/FilterBar';
 import { RepositoryCard } from './components/RepositoryCard';
-import { githubService, type Repository } from './services/github';
-
-interface TopRepo {
-  repo: string;
-  badge: 'innovation' | 'production' | 'learning' | 'community' | 'research' | 'rising-star';
-  score: number;
-}
-
-interface RankingResult {
-  top_3: TopRepo[];
-}
-
-interface CachedRanking {
-  ranking: RankingResult;
-  timestamp: number;
-  timeRange: 'daily' | 'weekly' | 'monthly';
-}
+import { githubService } from './services/github';
+import type { Repository, RankingResult, CachedRanking, TimeRange } from './types';
 
 const CACHE_KEY_PREFIX = 'github-trend-ai-cache-';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 ore in millisecondi
@@ -27,7 +12,7 @@ function App() {
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [rankingResult, setRankingResult] = useState<RankingResult | null>(null);
   const [isRanking, setIsRanking] = useState(false);
-  const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
+  const [timeRange, setTimeRange] = useState<TimeRange>('weekly');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cacheInfo, setCacheInfo] = useState<{ timestamp: number } | null>(null);
@@ -44,31 +29,28 @@ function App() {
       const now = Date.now();
 
       if (now - data.timestamp < CACHE_DURATION) {
-        console.log('✅ Using cached ranking for', timeRange, '(valid for', Math.round((CACHE_DURATION - (now - data.timestamp)) / (1000 * 60 * 60)), 'more hours)');
         return data;
       }
 
-      console.log('❌ Cache expired for', timeRange);
       return null;
-    } catch (err) {
-      console.error('Error loading cache:', err);
+    } catch {
       return null;
     }
   };
 
-  // Salva cache in localStorage
-  const saveCache = (ranking: RankingResult) => {
+  // Salva cache in localStorage (ranking + repositories)
+  const saveCache = (ranking: RankingResult, repos: Repository[]) => {
     try {
       const data: CachedRanking = {
         ranking,
+        repositories: repos,
         timestamp: Date.now(),
         timeRange
       };
       localStorage.setItem(getCacheKey(timeRange), JSON.stringify(data));
       setCacheInfo({ timestamp: data.timestamp });
-      console.log('💾 Ranking cached for 24h for', timeRange);
-    } catch (err) {
-      console.error('Error saving cache:', err);
+    } catch {
+      // Silently fail - cache is optional
     }
   };
 
@@ -76,19 +58,11 @@ function App() {
     // Se non forceRefresh, prova a caricare dalla cache
     if (!forceRefresh) {
       const cached = loadCache();
-      if (cached) {
+      if (cached && cached.repositories?.length > 0) {
+        // Usa dati dalla cache - nessuna chiamata GitHub
+        setRepositories(cached.repositories);
         setRankingResult(cached.ranking);
         setCacheInfo({ timestamp: cached.timestamp });
-        // Ricarica repos per visualizzazione griglia completa
-        setIsLoading(true);
-        try {
-          const repos = await githubService.searchTrendingAIRepos(timeRange, 20);
-          setRepositories(repos);
-        } catch (err) {
-          console.error('Error fetching repositories:', err);
-        } finally {
-          setIsLoading(false);
-        }
         return;
       }
     }
@@ -103,7 +77,6 @@ function App() {
       // Rank repositories with ONE batch AI call
       await rankRepositoriesWithAI(repos);
     } catch (err) {
-      console.error('Error fetching repositories:', err);
       setError(
         err instanceof Error
           ? err.message
@@ -144,10 +117,10 @@ function App() {
       const ranking: RankingResult = await response.json();
       setRankingResult(ranking);
 
-      // Salva in cache
-      saveCache(ranking);
-    } catch (err) {
-      console.error('Failed to rank repositories:', err);
+      // Salva in cache (ranking + repositories)
+      saveCache(ranking, repos);
+    } catch {
+      // Ranking failed - will show repos without badges
     } finally {
       setIsRanking(false);
     }
@@ -161,14 +134,13 @@ function App() {
     fetchRepositories();
   }, [timeRange]);
 
-  const handleTimeRangeChange = (range: 'daily' | 'weekly' | 'monthly') => {
+  const handleTimeRangeChange = (range: TimeRange) => {
     if (range === timeRange) return; // Già su questo tab
     fetchedRef.current = null; // Permetti fetch per nuovo timeRange
     setTimeRange(range);
   };
 
   const handleRefresh = () => {
-    console.log('🔄 Force refresh - bypassing cache for', timeRange);
     setRankingResult(null);
     setCacheInfo(null);
     localStorage.removeItem(getCacheKey(timeRange));

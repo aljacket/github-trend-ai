@@ -1,23 +1,7 @@
 import { Octokit } from '@octokit/rest';
+import type { Repository, TimeRange } from '../types';
 
-export interface Repository {
-  id: number;
-  name: string;
-  full_name: string;
-  description: string | null;
-  html_url: string;
-  stargazers_count: number;
-  forks_count: number;
-  language: string | null;
-  topics: string[];
-  created_at: string;
-  updated_at: string;
-  pushed_at: string;
-  owner: {
-    login: string;
-    avatar_url: string;
-  };
-}
+export type { Repository };
 
 export class GitHubService {
   private octokit: Octokit;
@@ -59,7 +43,7 @@ export class GitHubService {
   }
 
   async searchTrendingAIRepos(
-    timeRange: 'daily' | 'weekly' | 'monthly' = 'weekly',
+    timeRange: TimeRange = 'weekly',
     limit: number = 20
   ): Promise<Repository[]> {
     const date = new Date();
@@ -97,8 +81,6 @@ export class GitHubService {
 
       // Fallback: se meno di 10 repo creati, aggiungi i più popolari con attività recente
       if (items.length < 10) {
-        console.log(`⚠️  Only ${items.length} new repos found. Adding popular repos with recent activity...`);
-
         const [aiActive, aiFullActive] = await Promise.all([
           this.searchByTopic('ai', `pushed:>${dateString}`, 50, limit),
           this.searchByTopic('artificial-intelligence', `pushed:>${dateString}`, 50, limit),
@@ -109,7 +91,6 @@ export class GitHubService {
           .filter(i => !existingIds.has(i.id));
 
         items = [...items, ...activeItems].slice(0, limit);
-        console.log(`✅ Added ${activeItems.length} popular repos. Total: ${items.length}`);
       }
 
       return items.map(repo => ({
@@ -131,7 +112,6 @@ export class GitHubService {
         },
       }));
     } catch (error) {
-      console.error('Error fetching trending AI repos:', error);
       throw error;
     }
   }
@@ -145,7 +125,6 @@ export class GitHubService {
 
       return response.data;
     } catch (error) {
-      console.error('Error fetching repository details:', error);
       throw error;
     }
   }
@@ -160,8 +139,7 @@ export class GitHubService {
       // Decode base64 content
       const content = atob(response.data.content);
       return content;
-    } catch (error) {
-      console.error('Error fetching README:', error);
+    } catch {
       return null;
     }
   }
