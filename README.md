@@ -1,6 +1,6 @@
 # GitHub AI Trends
 
-A modern React application that monitors and analyzes trending AI repositories on GitHub using the Mastra AI framework.
+AI-powered analysis of GitHub trending repositories with automated reports. A modern React application that monitors and analyzes trending AI repositories on GitHub using the Mastra AI framework.
 
 ## Features
 
