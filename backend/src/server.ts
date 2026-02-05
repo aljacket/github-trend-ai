@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { analyzeRepository, type RepoData } from './agent.js';
 import { rankRepositories, type RepoForRanking } from './ranking-agent.js';
+import spikeRoutes from './routes/spikes.js';
 
 dotenv.config({ path: '../.env' });
 
@@ -15,6 +16,9 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Routes
+app.use('/api', spikeRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -94,5 +98,6 @@ app.listen(PORT, () => {
   console.log(`   ➜ Local:   http://localhost:${PORT}`);
   console.log(`   ➜ Health:  http://localhost:${PORT}/health`);
   console.log(`   ➜ Analyze: POST http://localhost:${PORT}/api/analyze`);
-  console.log(`   ➜ Rank:    POST http://localhost:${PORT}/api/rank\n`);
+  console.log(`   ➜ Rank:    POST http://localhost:${PORT}/api/rank`);
+  console.log(`   ➜ Spikes:  POST http://localhost:${PORT}/api/spikes\n`);
 });

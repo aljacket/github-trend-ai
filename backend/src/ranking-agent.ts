@@ -1,5 +1,15 @@
 import { Agent } from '@mastra/core/agent';
 
+export interface SpikeMetrics {
+  velocityStarsPerDay: number;
+  velocityForksPerDay: number;
+  combinedVelocity: number;
+  spikeScore: number;
+  isSpike: boolean;
+  ageInDays: number;
+  daysSinceLastPush: number;
+}
+
 export interface RepoForRanking {
   name: string;
   full_name: string;
@@ -10,6 +20,7 @@ export interface RepoForRanking {
   forks_count: number;
   created_at: string;
   updated_at: string;
+  spikeMetrics?: SpikeMetrics;
 }
 
 export interface TopRepo {
@@ -54,10 +65,13 @@ export async function rankRepositories(repos: RepoForRanking[]): Promise<Ranking
     // Analizza TUTTI i repos (20 max)
     const repoList = repos.map((r, i) => {
       const age = Math.floor((Date.now() - new Date(r.created_at).getTime()) / (1000 * 60 * 60 * 24));
-      return `${i + 1}. ${r.full_name} (${r.language || 'N/A'}, ⭐${r.stargazers_count}, ${age}d): ${(r.description || '').substring(0, 50)}`;
+      const spikeInfo = r.spikeMetrics
+        ? ` | Spike: ${r.spikeMetrics.spikeScore.toFixed(1)} (${r.spikeMetrics.isSpike ? 'YES' : 'NO'})`
+        : '';
+      return `${i + 1}. ${r.full_name} (${r.language || 'N/A'}, ⭐${r.stargazers_count}, ${age}d${spikeInfo}): ${(r.description || '').substring(0, 50)}`;
     }).join('\n');
 
-    const prompt = `Top 3 from:\n${repoList}`;
+    const prompt = `Top 3 from:\n${repoList}\n\nNote: Repos with "Spike: YES" have sudden popularity growth - prioritize "rising-star" badge for them.`;
 
     const result = await rankingAgent.generate(prompt);
 

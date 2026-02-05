@@ -72,7 +72,13 @@ function App() {
 
     try {
       const repos = await githubService.searchTrendingAIRepos(timeRange, 20);
-      setRepositories(repos);
+
+      // Per modalità spikes, arricchisci con spike metrics prima del ranking
+      if (timeRange === 'spikes') {
+        await enrichRepositoriesWithSpikes(repos);
+      } else {
+        setRepositories(repos);
+      }
 
       // Rank repositories with ONE batch AI call
       await rankRepositoriesWithAI(repos);
@@ -84,6 +90,52 @@ function App() {
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const enrichRepositoriesWithSpikes = async (repos: Repository[]) => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
+    try {
+      const reposForSpike = repos.map((repo) => ({
+        full_name: repo.full_name,
+        stargazers_count: repo.stargazers_count,
+        forks_count: repo.forks_count,
+        created_at: repo.created_at,
+        pushed_at: repo.pushed_at,
+      }));
+
+      const response = await fetch(`${backendUrl}/api/enrich-spikes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repositories: reposForSpike, threshold: 8.0, minStars: 100 }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Arricchisci i repository con spike metrics
+        const enrichedRepos = repos.map((repo) => {
+          const enrichedRepo = data.repositories.find((r: any) => r.full_name === repo.full_name);
+          if (enrichedRepo?.spikeMetrics) {
+            return { ...repo, spikeMetrics: enrichedRepo.spikeMetrics };
+          }
+          return repo;
+        });
+
+        // Ordina per spike score se disponibile
+        enrichedRepos.sort((a, b) => {
+          const scoreA = a.spikeMetrics?.spikeScore || 0;
+          const scoreB = b.spikeMetrics?.spikeScore || 0;
+          return scoreB - scoreA;
+        });
+
+        setRepositories(enrichedRepos);
+      } else {
+        setRepositories(repos);
+      }
+    } catch {
+      // Fallback: usa repos senza spike metrics
+      setRepositories(repos);
     }
   };
 
@@ -102,6 +154,7 @@ function App() {
         topics: repo.topics,
         created_at: repo.created_at,
         updated_at: repo.updated_at,
+        spikeMetrics: repo.spikeMetrics,
       }));
 
       const response = await fetch(`${backendUrl}/api/rank`, {
@@ -258,7 +311,13 @@ function App() {
         {repositories.length > 0 && (
           <div className="mt-8 text-center text-sm text-gray-500">
             Showing {repositories.length} trending AI repositories from{' '}
-            {timeRange === 'daily' ? 'today' : timeRange === 'weekly' ? 'this week' : 'this month'}
+            {timeRange === 'daily'
+              ? 'today'
+              : timeRange === 'weekly'
+              ? 'this week'
+              : timeRange === 'monthly'
+              ? 'this month'
+              : 'hot & rising (7 days activity)'}
           </div>
         )}
       </main>

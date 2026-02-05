@@ -1,6 +1,6 @@
 interface FilterBarProps {
-  timeRange: 'daily' | 'weekly' | 'monthly';
-  onTimeRangeChange: (range: 'daily' | 'weekly' | 'monthly') => void;
+  timeRange: 'daily' | 'weekly' | 'monthly' | 'spikes';
+  onTimeRangeChange: (range: 'daily' | 'weekly' | 'monthly' | 'spikes') => void;
   onRefresh: () => void;
   isLoading: boolean;
 }
@@ -11,10 +11,11 @@ export const FilterBar = ({
   onRefresh,
   isLoading,
 }: FilterBarProps) => {
-  const ranges: Array<{ value: 'daily' | 'weekly' | 'monthly'; label: string }> = [
+  const ranges: Array<{ value: 'daily' | 'weekly' | 'monthly' | 'spikes'; label: string; icon?: string }> = [
     { value: 'daily', label: 'Today' },
     { value: 'weekly', label: 'This Week' },
     { value: 'monthly', label: 'This Month' },
+    { value: 'spikes', label: 'Hot & Rising', icon: '🔥' },
   ];
 
   return (
@@ -29,11 +30,14 @@ export const FilterBar = ({
                 onClick={() => onTimeRangeChange(range.value)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   timeRange === range.value
-                    ? 'bg-blue-600 text-white'
+                    ? range.value === 'spikes'
+                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
+                      : 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
                 disabled={isLoading}
               >
+                {range.icon && <span className="mr-1">{range.icon}</span>}
                 {range.label}
               </button>
             ))}

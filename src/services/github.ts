@@ -46,12 +46,18 @@ export class GitHubService {
     timeRange: TimeRange = 'weekly',
     limit: number = 20
   ): Promise<Repository[]> {
-    const date = new Date();
-    const daysAgo = { daily: 1, weekly: 7, monthly: 30 }[timeRange];
-    date.setDate(date.getDate() - daysAgo);
-    const dateString = date.toISOString().split('T')[0];
-
     try {
+      // Modalità SPIKES: cerca repository con attività recente indipendentemente dall'età
+      if (timeRange === 'spikes') {
+        return this.searchSpikeRepositories(limit);
+      }
+
+      // Modalità standard: daily, weekly, monthly
+      const date = new Date();
+      const daysAgo = { daily: 1, weekly: 7, monthly: 30 }[timeRange];
+      date.setDate(date.getDate() - daysAgo);
+      const dateString = date.toISOString().split('T')[0];
+
       // Prima priorità: repo CREATI nel periodo (nuovi progetti)
       const [aiNew, aiFullNew, mlNew, llmNew] = await Promise.all([
         this.searchByTopic('ai', `created:>${dateString}`, 1, limit),
@@ -114,6 +120,58 @@ export class GitHubService {
     } catch (error) {
       throw error;
     }
+  }
+
+  /**
+   * Cerca repository con potenziale spike di popolarità
+   * Criteri:
+   * - Attività recente (push negli ultimi 7 giorni)
+   * - Almeno 100 stelle
+   * - Indipendente dall'età del repository
+   */
+  private async searchSpikeRepositories(limit: number): Promise<Repository[]> {
+    const date = new Date();
+    date.setDate(date.getDate() - 7); // ultimi 7 giorni di attività
+    const dateString = date.toISOString().split('T')[0];
+
+    // Cerca repository con attività recente e stelle significative
+    const [aiActive, aiFullActive, mlActive, llmActive] = await Promise.all([
+      this.searchByTopic('ai', `pushed:>${dateString}`, 100, limit),
+      this.searchByTopic('artificial-intelligence', `pushed:>${dateString}`, 100, limit),
+      this.searchByTopic('machine-learning', `pushed:>${dateString}`, 100, limit),
+      this.searchByTopic('llm', `pushed:>${dateString}`, 100, limit),
+    ]);
+
+    // Merge e deduplica
+    const items = this.mergeAndDedupe(
+      [
+        ...aiActive.data.items,
+        ...aiFullActive.data.items,
+        ...mlActive.data.items,
+        ...llmActive.data.items
+      ],
+      [],
+      limit
+    );
+
+    return items.map(repo => ({
+      id: repo.id,
+      name: repo.name,
+      full_name: repo.full_name,
+      description: repo.description,
+      html_url: repo.html_url,
+      stargazers_count: repo.stargazers_count,
+      forks_count: repo.forks_count,
+      language: repo.language,
+      topics: repo.topics || [],
+      created_at: repo.created_at,
+      updated_at: repo.updated_at,
+      pushed_at: repo.pushed_at,
+      owner: {
+        login: repo.owner?.login || '',
+        avatar_url: repo.owner?.avatar_url || '',
+      },
+    }));
   }
 
   async getRepositoryDetails(owner: string, repo: string) {

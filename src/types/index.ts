@@ -1,5 +1,16 @@
 // Shared types for GitHub Trend AI
 
+export interface SpikeMetrics {
+  velocityStarsPerDay: number;
+  velocityForksPerDay: number;
+  combinedVelocity: number;
+  recencyMultiplier: number;
+  spikeScore: number;
+  isSpike: boolean;
+  ageInDays: number;
+  daysSinceLastPush: number;
+}
+
 export interface Repository {
   id: number;
   name: string;
@@ -17,6 +28,7 @@ export interface Repository {
     login: string;
     avatar_url: string;
   };
+  spikeMetrics?: SpikeMetrics;
 }
 
 export interface RepoAnalysis {
@@ -44,7 +56,7 @@ export interface CachedRanking {
   ranking: RankingResult;
   repositories: Repository[];
   timestamp: number;
-  timeRange: 'daily' | 'weekly' | 'monthly';
+  timeRange: 'daily' | 'weekly' | 'monthly' | 'spikes';
 }
 
-export type TimeRange = 'daily' | 'weekly' | 'monthly';
+export type TimeRange = 'daily' | 'weekly' | 'monthly' | 'spikes';
