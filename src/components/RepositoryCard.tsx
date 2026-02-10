@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Repository, RepoAnalysis, BadgeType } from '../types';
 
 interface RepositoryCardProps {
@@ -8,7 +9,7 @@ interface RepositoryCardProps {
   showStar?: boolean;
 }
 
-export const RepositoryCard = ({ repo, analysis, isAnalyzing, topBadge, showStar }: RepositoryCardProps) => {
+const RepositoryCardComponent = ({ repo, analysis, isAnalyzing, topBadge, showStar }: RepositoryCardProps) => {
   const categoryColors: Record<string, string> = {
     framework: 'bg-purple-100 text-purple-800',
     library: 'bg-blue-100 text-blue-800',
@@ -61,39 +62,45 @@ export const RepositoryCard = ({ repo, analysis, isAnalyzing, topBadge, showStar
     : 'border border-gray-200';
 
   return (
-    <div className={`relative bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-all ${borderClass} ${topBadge ? badgeColors[topBadge] : ''}`}>
-      {/* Stella per #1 */}
+    <div className={`group relative bg-white rounded-2xl shadow-sm p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ${borderClass} ${topBadge ? badgeColors[topBadge] : ''} overflow-hidden`}>
+      {/* Hover gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+      {/* Stella per #1 con animazione migliorata */}
       {showStar && (
-        <div className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-lg transform rotate-12 animate-pulse z-10">
-          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <div className="absolute -top-3 -right-3 w-14 h-14 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-full flex items-center justify-center shadow-xl transform rotate-12 animate-pulse z-10 ring-4 ring-yellow-400/30">
+          <svg className="w-8 h-8 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         </div>
       )}
 
-      {/* Badge per top 3 */}
+      {/* Badge per top 3 con animazione */}
       {topBadge && (
-        <div className="absolute -top-2 left-4 z-10">
-          <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full border-2 bg-white shadow-sm ${badgeBorderColors[topBadge]} ${badgeTextColors[topBadge]}`}>
+        <div className="absolute -top-2 left-4 z-10 animate-float">
+          <span className={`inline-flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-full border-2 bg-white shadow-lg ${badgeBorderColors[topBadge]} ${badgeTextColors[topBadge]} backdrop-blur-sm`}>
             {badgeLabels[topBadge]}
           </span>
         </div>
       )}
 
       {/* Header */}
-      <div className={`flex items-start justify-between mb-3 ${topBadge ? 'mt-4' : ''}`}>
+      <div className={`relative flex items-start justify-between mb-4 ${topBadge ? 'mt-4' : ''}`}>
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <img
-            src={repo.owner.avatar_url}
-            alt={repo.owner.login}
-            className="w-10 h-10 rounded-full"
-          />
+          <div className="relative">
+            <img
+              src={repo.owner.avatar_url}
+              alt={repo.owner.login}
+              className="w-12 h-12 rounded-xl ring-2 ring-gray-100 group-hover:ring-purple-200 transition-all"
+            />
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+          </div>
           <div className="min-w-0 flex-1">
             <a
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-lg text-gray-900 hover:text-blue-600 transition-colors truncate block"
+              className="font-bold text-lg text-gray-900 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 transition-all truncate block"
             >
               {repo.name}
             </a>
@@ -112,7 +119,7 @@ export const RepositoryCard = ({ repo, analysis, isAnalyzing, topBadge, showStar
       </div>
 
       {/* Description */}
-      <p className="text-gray-700 text-sm mb-4 line-clamp-2">
+      <p className="relative text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
         {repo.description || 'No description available'}
       </p>
 
@@ -159,21 +166,21 @@ export const RepositoryCard = ({ repo, analysis, isAnalyzing, topBadge, showStar
         </div>
       )}
 
-      {/* Stats */}
-      <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-        <div className="flex items-center gap-1">
+      {/* Stats con design moderno */}
+      <div className="relative flex items-center gap-4 text-sm mb-4">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg group-hover:from-yellow-100 group-hover:to-amber-100 transition-colors">
           <svg
-            className="w-4 h-4"
+            className="w-4 h-4 text-yellow-600"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
-          <span>{repo.stargazers_count.toLocaleString()}</span>
+          <span className="font-semibold text-gray-700">{repo.stargazers_count.toLocaleString()}</span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg group-hover:from-blue-100 group-hover:to-indigo-100 transition-colors">
           <svg
-            className="w-4 h-4"
+            className="w-4 h-4 text-blue-600"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -183,23 +190,23 @@ export const RepositoryCard = ({ repo, analysis, isAnalyzing, topBadge, showStar
               clipRule="evenodd"
             />
           </svg>
-          <span>{repo.forks_count.toLocaleString()}</span>
+          <span className="font-semibold text-gray-700">{repo.forks_count.toLocaleString()}</span>
         </div>
         {repo.language && (
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span>{repo.language}</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg group-hover:from-purple-100 group-hover:to-pink-100 transition-colors">
+            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-purple-500 to-pink-500"></div>
+            <span className="font-semibold text-gray-700">{repo.language}</span>
           </div>
         )}
       </div>
 
-      {/* Topics */}
+      {/* Topics con hover effect */}
       {repo.topics.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="relative flex flex-wrap gap-2">
           {repo.topics.slice(0, 5).map((topic) => (
             <span
               key={topic}
-              className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+              className="px-3 py-1.5 bg-gradient-to-r from-gray-100 to-gray-50 hover:from-purple-100 hover:to-pink-100 text-gray-700 hover:text-purple-700 text-xs font-medium rounded-full border border-gray-200 hover:border-purple-300 cursor-default transition-all"
             >
               {topic}
             </span>
@@ -209,3 +216,15 @@ export const RepositoryCard = ({ repo, analysis, isAnalyzing, topBadge, showStar
     </div>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders
+// Only re-render if repo.id, topBadge, showStar, or analysis changes
+export const RepositoryCard = memo(RepositoryCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.repo.id === nextProps.repo.id &&
+    prevProps.topBadge === nextProps.topBadge &&
+    prevProps.showStar === nextProps.showStar &&
+    prevProps.isAnalyzing === nextProps.isAnalyzing &&
+    prevProps.analysis === nextProps.analysis
+  );
+});
