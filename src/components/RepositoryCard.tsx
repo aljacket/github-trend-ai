@@ -31,12 +31,30 @@ const RepositoryCardComponent = ({ repo, analysis, isAnalyzing, topBadge, showSt
   };
 
   const badgeLabels = {
-    innovation: '💡 Most Innovative',
-    production: '🚀 Best for Production',
-    learning: '📚 Best for Learning',
-    community: '👥 Best Community',
-    research: '🔬 Cutting-edge Research',
-    'rising-star': '⚡ Rising Star',
+    innovation: 'Most Innovative',
+    production: 'Best for Production',
+    learning: 'Best for Learning',
+    community: 'Best Community',
+    research: 'Cutting-edge Research',
+    'rising-star': 'Rising Star',
+  };
+
+  const badgeAccent = {
+    innovation: 'bg-orange-500',
+    production: 'bg-purple-500',
+    learning: 'bg-emerald-500',
+    community: 'bg-pink-500',
+    research: 'bg-blue-500',
+    'rising-star': 'bg-yellow-500',
+  };
+
+  const badgePillBg = {
+    innovation: 'bg-orange-50',
+    production: 'bg-purple-50',
+    learning: 'bg-emerald-50',
+    community: 'bg-pink-50',
+    research: 'bg-blue-50',
+    'rising-star': 'bg-yellow-50',
   };
 
   const badgeBorderColors = {
@@ -66,26 +84,29 @@ const RepositoryCardComponent = ({ repo, analysis, isAnalyzing, topBadge, showSt
       {/* Hover gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-      {/* Stella per #1 con animazione migliorata */}
+      {/* Stella per #1: medaglia in alto a sinistra */}
       {showStar && (
-        <div className="absolute -top-3 -right-3 w-14 h-14 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-full flex items-center justify-center shadow-xl transform rotate-12 animate-pulse z-10 ring-4 ring-yellow-400/30">
-          <svg className="w-8 h-8 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
+        <div className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md ring-2 ring-white animate-badge-pop">
+          <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         </div>
       )}
 
-      {/* Badge per top 3 con animazione */}
+      {/* Badge top-right: tab inset che segue la curvatura della card */}
       {topBadge && (
-        <div className="absolute -top-2 left-4 z-10 animate-badge-pop">
-          <span className={`inline-flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-full border-2 bg-white shadow-lg ${badgeBorderColors[topBadge]} ${badgeTextColors[topBadge]} backdrop-blur-sm`}>
+        <div
+          className={`absolute top-0 right-0 z-10 inline-flex items-center gap-2 pl-3 pr-4 py-2 rounded-tr-2xl rounded-bl-2xl ${badgePillBg[topBadge]} ${badgeTextColors[topBadge]} animate-badge-pop`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${badgeAccent[topBadge]}`}></span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider">
             {badgeLabels[topBadge]}
           </span>
         </div>
       )}
 
       {/* Header */}
-      <div className={`relative flex items-start justify-between mb-4 ${topBadge ? 'mt-4' : ''}`}>
+      <div className={`relative flex items-start justify-between mb-4 ${topBadge ? 'pr-32' : ''} ${showStar ? 'pl-12' : ''}`}>
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="relative">
             <img
