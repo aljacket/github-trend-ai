@@ -272,13 +272,11 @@ function App() {
               <div className="flex-1">
                 <h3 className="font-bold text-red-900 mb-2 text-lg">Oops! Something went wrong</h3>
                 <p className="text-red-800 text-sm leading-relaxed">{error}</p>
-                {!import.meta.env.VITE_GITHUB_TOKEN && (
-                  <div className="mt-3 p-3 bg-red-100/50 rounded-xl border border-red-200">
-                    <p className="text-red-800 text-sm">
-                      💡 Please add your GitHub token to the <code className="bg-red-200 px-2 py-0.5 rounded font-mono text-xs">.env</code> file
-                    </p>
-                  </div>
-                )}
+                <div className="mt-3 p-3 bg-red-100/50 rounded-xl border border-red-200">
+                  <p className="text-red-800 text-sm">
+                    💡 Make sure the backend is running and <code className="bg-red-200 px-2 py-0.5 rounded font-mono text-xs">VITE_BACKEND_URL</code> points to it.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

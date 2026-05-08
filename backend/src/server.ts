@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { analyzeRepository, type RepoData } from './agent.js';
 import { rankRepositories, type RepoForRanking } from './ranking-agent.js';
 import spikeRoutes from './routes/spikes.js';
+import githubRoutes from './routes/github.js';
 
 dotenv.config();
 dotenv.config({ path: '../.env' });
@@ -22,6 +23,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', spikeRoutes);
+app.use('/api', githubRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
