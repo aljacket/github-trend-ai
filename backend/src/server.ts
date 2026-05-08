@@ -5,16 +5,19 @@ import { analyzeRepository, type RepoData } from './agent.js';
 import { rankRepositories, type RepoForRanking } from './ranking-agent.js';
 import spikeRoutes from './routes/spikes.js';
 
+dotenv.config();
 dotenv.config({ path: '../.env' });
 
-// Check if OpenAI key is loaded
 const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+  : true;
+
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 // Routes
