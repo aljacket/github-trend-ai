@@ -77,7 +77,7 @@ const RepositoryCardComponent = ({ repo, analysis, isAnalyzing, topBadge, showSt
 
       {/* Badge per top 3 con animazione */}
       {topBadge && (
-        <div className="absolute -top-2 left-4 z-10 animate-float">
+        <div className="absolute -top-2 left-4 z-10 animate-badge-pop">
           <span className={`inline-flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-full border-2 bg-white shadow-lg ${badgeBorderColors[topBadge]} ${badgeTextColors[topBadge]} backdrop-blur-sm`}>
             {badgeLabels[topBadge]}
           </span>
