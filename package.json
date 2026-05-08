@@ -8,14 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "concurrently -n fe,be -c cyan,yellow \"npm run dev\" \"npm run dev -w backend\""
+    "start": "concurrently -n fe,be -c cyan,yellow \"npm run dev\" \"npm --prefix backend run dev\"",
+    "postinstall": "npm --prefix backend install"
   },
-  "workspaces": ["backend"],
   "dependencies": {
-    "@mastra/core": "^0.24.9",
-    "@octokit/rest": "^22.0.1",
     "@tailwindcss/vite": "^4.1.18",
-    "dotenv": "^17.2.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.1.18",
